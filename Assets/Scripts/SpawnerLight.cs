@@ -1,22 +1,21 @@
 ﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.Collections;
 
 public class SpawnerLight : MonoBehaviour
 {
-    Header("Spawn Settings")] [SerializeField]
-    private GameObject obstaclePrefab; // Префаб препятствия
+    
+    public GameObject obstaclePrefab; // Префаб препятствия
 
-    [SerializeField] private float spawnInterval = 2f; // Периодичность спавна в секундах
+    public float spawnInterval = 2f; // Периодичность спавна в секундах
 
-    [Header("Movement Settings")]
-    [SerializeField]
-    private Vector3 movementDirection = Vector3.back; // Направление движения препятствий
+    public Vector3 movementDirection = Vector3.back; // Направление движения препятствий
 
-    [SerializeField] private float Speed = 3f; // Минимальная скорость
+    public float Speed = 3f; // Минимальная скорость
 
 
-    [Header("Life Time Settings")]
-    [SerializeField]
-    private float obstacleLifetime = 10f; // Время жизни препятствия
+    public float obstacleLifetime = 10f; // Время жизни препятствия
 
 
     private float lastSpawnTime;
