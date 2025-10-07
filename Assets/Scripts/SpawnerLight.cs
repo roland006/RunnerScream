@@ -12,17 +12,16 @@ public class SpawnerLight : MonoBehaviour
 
     public Vector3 movementDirection = Vector3.back; // Направление движения препятствий
 
-    public float Speed = 3f; // Минимальная скорость
-
+    public float Speed = 3f; //скорость
 
     public float obstacleLifetime = 10f; // Время жизни препятствия
 
-
     private float lastSpawnTime;
-    private List<GameObject> spawnedObstacles = new List<GameObject>();
+
+    private List<GameObject> spawnedObstacles = new List<GameObject>();    
 
     void Start()
-    {
+    {       
         lastSpawnTime = Time.time;
         // Спавним первое препятствие сразу
         SpawnObstacle();
