@@ -4,33 +4,55 @@ using UnityEngine;
 public class SpawerObstacles : MonoBehaviour
 {
    
-    public List<GameObject> obstaclePrefabs; // Список префабов препятствий
+    [Header("Spawn Settings")] 
+    [SerializeField] private List<GameObject> obstaclePrefabs;
+    [SerializeField] private float spawnInterval = 2f;
+    [SerializeField] private bool useWeightedRandom = false;
 
-    public float spawnInterval = 2f; // Периодичность спавна в секундах
-    public bool useWeightedRandom = false; // Использовать весовую систему
+    [Header("Movement Settings")] 
+    [SerializeField] private Vector3 movementDirection = Vector3.back;
+    [SerializeField] private float minSpeed = 3f;
+    [SerializeField] private float maxSpeed = 7f;
+    [SerializeField] private float accelerationPerSecond = 0.5f; // ускорение всех объектов
+    [SerializeField] private float maxSpeedLimit = 15f; // ограничение максимальной скорости
 
-    public Vector3 movementDirection = Vector3.back; // Направление движения препятствий
-    public float minSpeed = 3f; // Минимальная скорость
-    public float maxSpeed = 7f; // Максимальная скорость
+    [Header("Life Time Settings")] 
+    [SerializeField] private float obstacleLifetime = 10f;
 
-    public float obstacleLifetime = 10f; // Время жизни препятствия
-
+    [Header("Score Settings")]
+    [SerializeField] private float baseScoreRate = 10f; // очки в секунду при старте
+    private float currentScoreRate;
+    private float score;
 
     private float lastSpawnTime;
-    private List<GameObject> spawnedObstacles = new List<GameObject>();
+    private float nextSpawnDelay = 0f; // задержка после длины объекта
+    private List<MovingObstacle2> spawnedObstacles = new List<MovingObstacle2>();
 
     void Start()
     {
         lastSpawnTime = Time.time;
+        currentScoreRate = baseScoreRate;
 
-        // Спавним первое препятствие сразу
-        SpawnObstacle();
+        SpawnObstacle(); // первое препятствие сразу
     }
 
     void Update()
     {
-        // Проверяем, пришло ли время спавнить новое препятствие
-        if (Time.time - lastSpawnTime >= spawnInterval)
+        float deltaTime = Time.deltaTime;
+
+        // === Ускоряем все объекты ===
+        foreach (var obstacle in spawnedObstacles)
+        {
+            if (obstacle != null)
+                obstacle.ApplyAcceleration(accelerationPerSecond * deltaTime, maxSpeedLimit);
+        }
+
+        // === Обновляем очки ===
+        score += currentScoreRate * deltaTime;
+        currentScoreRate += accelerationPerSecond * deltaTime; // растет пропорционально ускорению
+
+        // === Проверяем, можно ли спавнить новое препятствие ===
+        if (Time.time - lastSpawnTime >= spawnInterval + nextSpawnDelay)
         {
             SpawnObstacle();
             lastSpawnTime = Time.time;
@@ -64,14 +86,18 @@ public class SpawerObstacles : MonoBehaviour
         // Добавляем компонент для управления движением и временем жизни
         MovingObstacle2 obstacleController = newObstacle.GetComponent<MovingObstacle2>();
         if (obstacleController == null)
-        {
             obstacleController = newObstacle.AddComponent<MovingObstacle2>();
-        }
+
+        float obstacleLength = 1f; // значение по умолчанию
+        ObstacleData data = newObstacle.GetComponent<ObstacleData>();
+        if (data != null)
+            obstacleLength = data.obstacleLength;
 
         obstacleController.Initialize(movementDirection, randomSpeed, obstacleLifetime);
+        spawnedObstacles.Add(obstacleController);
 
-        // Добавляем в список
-        spawnedObstacles.Add(newObstacle);
+        // === Вычисляем задержку для следующего спавна ===
+        nextSpawnDelay = obstacleLength / randomSpeed;
     }
 
     GameObject GetRandomPrefab()
@@ -82,7 +108,7 @@ public class SpawerObstacles : MonoBehaviour
         return obstaclePrefabs[randomIndex];
     }
 
-    // Компонент для управления движением препятствий
+    // Класс управления движением
     public class MovingObstacle2 : MonoBehaviour
     {
         private Vector3 direction;
@@ -100,14 +126,14 @@ public class SpawerObstacles : MonoBehaviour
 
         void Update()
         {
-            // Движение препятствия
             transform.position += direction * speed * Time.deltaTime;
-
-            // Проверка времени жизни
             if (Time.time - spawnTime >= lifetime)
-            {
                 Destroy(gameObject);
-            }
+        }
+
+        public void ApplyAcceleration(float deltaSpeed, float maxSpeed)
+        {
+            speed = Mathf.Min(speed + deltaSpeed, maxSpeed);
         }
     }
 }

@@ -257,16 +257,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   obstaclePrefabs:
-  - {fileID: 858836394094775890, guid: f1305f162f3bdce46b7c5915eb7d8be9, type: 3}
-  - {fileID: 7351669370378616971, guid: fdde06501feb4814ca8d1f7b71a9cbc3, type: 3}
-  - {fileID: 5580968563862183292, guid: 79ad478a273734e46892f5b5face731e, type: 3}
-  - {fileID: 3971279574165057374, guid: 8fe999b3ecb8e3e4b87c50ffc9242bd2, type: 3}
-  spawnInterval: 2
+  - {fileID: 5386192686616801242, guid: d56c143971abe6c4baa88a00a409403b, type: 3}
+  - {fileID: 3228712613097479995, guid: 9859270f3e79ed642ae641a4af3d5cb2, type: 3}
+  - {fileID: 3137540619630611646, guid: 8a3fdb166f2ab0a4fab491df3c864221, type: 3}
+  - {fileID: 2118222782824441470, guid: 5ad95a6eb442ca6488a8aafdbd642117, type: 3}
+  - {fileID: 4386288187882892828, guid: ae3a8bd8d3cf23545a676e34e0301a5c, type: 3}
+  spawnInterval: 0.5
   useWeightedRandom: 0
   movementDirection: {x: -1, y: 0, z: 0}
   minSpeed: 23
   maxSpeed: 23
+  accelerationPerSecond: 0.5
+  maxSpeedLimit: 15
   obstacleLifetime: 15
+  baseScoreRate: 10
 --- !u!4 &84056357
 Transform:
   m_ObjectHideFlags: 0
@@ -1455,7 +1459,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1307995371
 Transform:
   m_ObjectHideFlags: 0
