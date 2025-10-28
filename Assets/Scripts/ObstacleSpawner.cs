@@ -96,7 +96,13 @@ public class SpawerObstacles : MonoBehaviour
         if (currentDifficultyTimer >= currentDuration)
         {
             currentDifficultyTimer = 0f;
-            currentDifficultyIndex = (currentDifficultyIndex + 1) % difficultyLevels.Count;
+            currentDifficultyIndex++;
+
+            if (currentDifficultyIndex >= difficultyLevels.Count)
+            {
+                currentDifficultyIndex = 0;
+            }                       
+            
             recentSpawnedIndices.Clear(); // Clear history when changing difficulty
             
             Debug.Log($"Switched to difficulty: {difficultyLevels[currentDifficultyIndex].name}");
