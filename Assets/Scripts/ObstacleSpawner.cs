@@ -140,7 +140,7 @@ public class SpawerObstacles : MonoBehaviour
             Debug.LogWarning("No obstacle available to spawn!");
         }
 
-        yield return new WaitForSecondsRealtime(nextSpawnDelay);
+        yield return new WaitForSeconds(nextSpawnDelay);
         StartCoroutine(SpawnObstacle());
     }
 
