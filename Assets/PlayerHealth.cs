@@ -61,6 +61,10 @@ namespace Game
 
             currentHealth--;
 
+            if (immunityRoutine != null)
+                StopCoroutine(immunityRoutine);
+            immunityRoutine = StartCoroutine(ImmunityFlash());
+
             UIController.SetHealth(currentHealth);
 
             if (currentHealth <= 0)
@@ -70,10 +74,7 @@ namespace Game
 
                 return;
             }
-
-            if (immunityRoutine != null)
-                StopCoroutine(immunityRoutine);
-            immunityRoutine = StartCoroutine(ImmunityFlash());
+            
         }
 
         IEnumerator ImmunityFlash()

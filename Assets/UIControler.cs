@@ -65,11 +65,8 @@ namespace Game.UI
             var size = Instance.healthBar.sizeDelta;
             size.x = Instance.healthBarElementSize * health;
             Instance.healthBar.sizeDelta = size;
-        }
-
-        // gameover
-        private bool ended = false;
-        private float timer;
+        }        
+     
 
         public void OnGameOver(bool noTimer = false)
         {
@@ -77,9 +74,10 @@ namespace Game.UI
             PauseButton.SetActive(false);
             
             gameOverPanel.SetActive(true);
-            timer = 5f;
+            
 
             cost = 1 << PlayerHealth.DeathsCount;
+
             costText.text = cost.ToString();
             moneyText.text = hardMoney.ToString();
             continueButton.interactable = hardMoney >= cost;
