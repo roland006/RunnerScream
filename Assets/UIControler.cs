@@ -51,7 +51,7 @@ namespace Game.UI
         public void LoadGarage()
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene(0);
+            SceneManager.LoadScene(1);
         }
 
         public void Restart()
