@@ -3,6 +3,7 @@ using PlayFab.ClientModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.Services.LevelPlay;
 
 namespace DataBase
 {
@@ -29,9 +30,27 @@ namespace DataBase
 
             Debug.Log("CustomId: " + _customId); // Для отладки
             LoginWithCustomID();
+            
+            // Register event listeners
+            LevelPlay.OnInitSuccess += SdkInitializationCompletedEvent;
+            LevelPlay.OnInitFailed += SdkInitializationFailedEvent;
+        
+            // Initialize the SDK with your App Key
+            LevelPlay.Init("24583f3d5");
 
+
+
+            PlayFabClientAPI.GetAdPlacements(new GetAdPlacementsRequest(),
+                result =>
+                {
+                    foreach (var placement in result.AdPlacements)
+                    {
+                        Debug.Log($"Название: {placement.PlacementName}, ID: {placement.PlacementId}");
+                    }
+                },
+                error => Debug.LogError(error.GenerateErrorReport()));
         }
-
+      
         void LoginWithCustomID()
         {
             var request = new LoginWithCustomIDRequest
@@ -67,7 +86,6 @@ namespace DataBase
             {
                 Debug.Log("Привет, новичок! Твой постоянный ник еще не задан.");
                 CreateNicknamePanel.SetActive(true);
-
             }
             else
             {
@@ -97,8 +115,6 @@ namespace DataBase
             {
                 Debug.Log("Ник не может быть пустым");
             }
-
-
         }
 
         void OnDisplayNameUpdateSuccess(UpdateUserTitleDisplayNameResult result)
@@ -124,5 +140,22 @@ namespace DataBase
             CreateNicknamePanel.SetActive(false);
             MenuPanel.SetActive(true);
         }
-}
+        
+        
+       
+
+        private void SdkInitializationCompletedEvent(LevelPlayConfiguration config)
+        {
+            Debug.Log("LevelPlay SDK initialized successfully.");
+            // You can now also use the 'config' object if needed.
+        }
+
+        // Ensure the error handler also has the correct signature
+        private void SdkInitializationFailedEvent(LevelPlayInitError error)
+        {
+            Debug.LogError("LevelPlay SDK initialization failed: " + error);
+        }
+           
+        
+    }
 }
