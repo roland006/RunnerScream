@@ -11,46 +11,23 @@ namespace DataBase
     {
         private string _customId;
         [SerializeField] private GameObject CreateNicknamePanel;
-        [SerializeField] private GameObject MenuPanel;
         [SerializeField] private TMP_InputField Textbox;
+
+        private string StringPlacementId = "F008E07BEB7457EF"; // это Placement ID из строки браузера в Playfab. Про начисление награды
+        private string StringAppId = "24583f3d5"; // это AppKey из LevelPlay, про подключение рекламы
+        private string StringTitleId = "10C871"; // это TitleId из плейфаба. Обозначающий айдишник игры
 
         void Start()
         {
-            // Убедись, что TitleId задан
-            if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
-            {
-                PlayFabSettings.staticSettings.TitleId = "10C871"; // Подставь сюда свой ID
-            }
-
             _customId = SystemInfo.deviceUniqueIdentifier;
             if (string.IsNullOrEmpty(_customId))
             {
                 _customId = "Player_" + System.Guid.NewGuid().ToString();
             }
-
-            Debug.Log("CustomId: " + _customId); // Для отладки
-            LoginWithCustomID();
-            
-            // Register event listeners
-            LevelPlay.OnInitSuccess += SdkInitializationCompletedEvent;
-            LevelPlay.OnInitFailed += SdkInitializationFailedEvent;
         
-            // Initialize the SDK with your App Key
-            LevelPlay.Init("24583f3d5");
-
-
-
-            PlayFabClientAPI.GetAdPlacements(new GetAdPlacementsRequest(),
-                result =>
-                {
-                    foreach (var placement in result.AdPlacements)
-                    {
-                        Debug.Log($"Название: {placement.PlacementName}, ID: {placement.PlacementId}");
-                    }
-                },
-                error => Debug.LogError(error.GenerateErrorReport()));
+            LoginWithCustomID();
         }
-      
+
         void LoginWithCustomID()
         {
             var request = new LoginWithCustomIDRequest
@@ -69,9 +46,7 @@ namespace DataBase
         private void OnLoginSuccess(LoginResult result)
         {
             Debug.Log("Успешный вход! PlayFabId: " + result.PlayFabId);
-
             string displayName = null;
-
             // Пытаемся получить ник из данных профиля
             if (result.InfoResultPayload?.PlayerProfile != null)
             {
@@ -91,13 +66,62 @@ namespace DataBase
             {
                 // Игрок не новый, ник уже есть -> загружаем его
                 Debug.Log("С возвращением, " + displayName + "!");
-                LoadMenu();
+                InitAds();
             }
         }
 
         private void OnLoginFailure(PlayFabError error)
         {
             Debug.LogError("Ошибка входа: " + error.GenerateErrorReport());
+        }
+
+        void InitAds()
+        {
+            // Убедись, что TitleId задан
+            if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
+            {
+                PlayFabSettings.staticSettings.TitleId = StringTitleId;
+            }
+
+            // Register event listeners
+            LevelPlay.OnInitSuccess += SdkInitializationCompletedEvent;
+            LevelPlay.OnInitFailed += SdkInitializationFailedEvent;
+
+            // Initialize the SDK with your App Key
+            LevelPlay.Init(StringAppId);
+
+            // Вызов метода для получения конкретного размещения
+            GetSpecificAdPlacement();
+    
+            LoadMenu();
+        }
+
+        public void GetSpecificAdPlacement()
+        {
+            var request = new GetAdPlacementsRequest
+            {
+                AppId = StringAppId,
+                Identifier = new NameIdentifier()
+                {
+                    Id = StringPlacementId
+                }
+            };
+
+            PlayFabClientAPI.GetAdPlacements(request,
+                result => {
+                    if (result.AdPlacements.Count > 0)
+                    {
+                        var placement = result.AdPlacements[0];
+                        Debug.Log($"Найдено размещение: {placement.PlacementName}");
+                        // Здесь можно сохранить PlacementId и RewardId для дальнейшего использования
+                    }
+                    else
+                    {
+                        Debug.Log("Размещение не найдено");
+                    }
+                },
+                error => Debug.LogError(error.GenerateErrorReport())
+            );
         }
 
         public void SetDisplayNameForNewPlayer()
@@ -120,7 +144,7 @@ namespace DataBase
         void OnDisplayNameUpdateSuccess(UpdateUserTitleDisplayNameResult result)
         {
             Debug.Log("Ник успешно установлен: " + result.DisplayName);
-            LoadMenu();
+            InitAds();
         }
 
         void OnDisplayNameUpdateError(PlayFabError error)
@@ -138,11 +162,9 @@ namespace DataBase
         void LoadMenu()
         {
             CreateNicknamePanel.SetActive(false);
-            MenuPanel.SetActive(true);
+            SceneManager.LoadScene(1);
         }
-        
-        
-       
+
 
         private void SdkInitializationCompletedEvent(LevelPlayConfiguration config)
         {
@@ -155,7 +177,5 @@ namespace DataBase
         {
             Debug.LogError("LevelPlay SDK initialization failed: " + error);
         }
-           
-        
     }
 }
