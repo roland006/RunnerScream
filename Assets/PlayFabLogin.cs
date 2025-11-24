@@ -77,17 +77,14 @@ namespace DataBase
 
         void InitAds()
         {
-            // Убедись, что TitleId задан
             if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
             {
                 PlayFabSettings.staticSettings.TitleId = StringTitleId;
             }
 
-            // Register event listeners
             LevelPlay.OnInitSuccess += SdkInitializationCompletedEvent;
             LevelPlay.OnInitFailed += SdkInitializationFailedEvent;
-
-            // Initialize the SDK with your App Key
+            
             LevelPlay.Init(StringAppId);
 
             // Вызов метода для получения конкретного размещения
@@ -169,10 +166,7 @@ namespace DataBase
         private void SdkInitializationCompletedEvent(LevelPlayConfiguration config)
         {
             Debug.Log("LevelPlay SDK initialized successfully.");
-            // You can now also use the 'config' object if needed.
         }
-
-        // Ensure the error handler also has the correct signature
         private void SdkInitializationFailedEvent(LevelPlayInitError error)
         {
             Debug.LogError("LevelPlay SDK initialization failed: " + error);

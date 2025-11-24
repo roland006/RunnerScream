@@ -1,8 +1,11 @@
 using UnityEngine;
 using Currency;
+using Unity.Services.LevelPlay;
 
 public class MenuCurrencyUtils : MonoBehaviour
 {
+    [SerializeField] private AdManager adManager;
+
     void Start()
     {
         PlayFabCurrency.GetCurrencyBalance();
@@ -15,7 +18,7 @@ public class MenuCurrencyUtils : MonoBehaviour
 
     public void AddHardCurrency(int amountToAdd)
     {
-        PlayFabCurrency.AddCurrency("HC", amountToAdd);
+        adManager.ShowRewardedAd();
     }
 
     public void SubtractSoftCurrency(int amountToSubstract)

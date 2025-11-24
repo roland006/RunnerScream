@@ -5,33 +5,29 @@ using Unity.Services.LevelPlay;
 
 public class AdManager : MonoBehaviour
 {
-    private string _placementId = "F008E07BEB7457EF";
-    private string _rewardId = "27FE990FE2FC3E4E";
+    private string StringPlacementId = "F008E07BEB7457EF"; // это Placement ID из ссылки URL в Playfab. 
+    private string StringRewardId = "27FE990FE2FC3E4E"; // награда в Placement из ссылки URL в Playfab
+    private string StringAdUnitId = "1mnkp5jrqnmrrjfd"; // ID Ad Unit из levelPlay -> Settings
+    private string StringAppId = "24583f3d5"; // это AppKey из LevelPlay, про подключение рекламы
+
     private LevelPlayRewardedAd _rewardedAd;
-    [SerializeField] private string _adUnitId = "your_ad_unit_id"; // Ваш Ad Unit ID
 
     void Start()
     {
         // Подписываемся на успешную инициализацию LevelPlay
         LevelPlay.OnInitSuccess += OnLevelPlayInitialized;
-        
-        // Инициализируем LevelPlay с указанием форматов рекламы
-        /*LevelPlayAdFormat[] adFormats = { LevelPlayAdFormat.REWARDED };
-        LevelPlay.Init("your_app_key_here", adFormats: adFormats);*/
-        
-        
     }
 
     private void OnLevelPlayInitialized(LevelPlayConfiguration config)
     {
         Debug.Log("LevelPlay инициализирован!");
-        
+
         // Создаем экземпляр rewarded ad после инициализации
-        _rewardedAd = new LevelPlayRewardedAd(_adUnitId);
-        
+        _rewardedAd = new LevelPlayRewardedAd(StringAdUnitId);
+
         // Подписываемся на события LevelPlayRewardedAd
         RegisterRewardedAdEvents();
-        
+
         // Загружаем рекламу
         LoadRewardedAd();
     }
@@ -49,20 +45,28 @@ public class AdManager : MonoBehaviour
     // Метод для показа рекламы по нажатию кнопки
     public void ShowRewardedAd()
     {
+        Debug.Log("1. Кнопка нажата, вызов метода ShowRewardedAd.");
+
         if (_rewardedAd != null && _rewardedAd.IsAdReady())
         {
-            Debug.Log("Показываем рекламу...");
-            // Сообщить PlayFab о начале показа
+            Debug.Log("2. Реклама готова, начинаем показ.");
             ReportAdActivity(AdActivity.Start);
-            
-            // Показать рекламу через LevelPlayRewardedAd
             _rewardedAd.ShowAd();
         }
         else
         {
-            Debug.Log("Реклама не готова");
-            LoadRewardedAd(); // Попробовать загрузить снова
+            Debug.Log("2. ОШИБКА: Реклама не готова (IsAdReady вернул false).");
+            // Здесь можно добавить логику повторной загрузки рекламы
+            LoadRewardedAd();
         }
+    }
+
+// В обработчике успешного просмотра (OnAdRewarded)
+    private void OnAdRewarded(LevelPlayAdInfo adInfo, LevelPlayReward reward)
+    {
+        Debug.Log("4. Событие OnAdRewarded: реклама досмотрена, можно выдавать награду.");
+        ReportAdActivity(AdActivity.End);
+        RewardPlayer();
     }
 
     // Метод для загрузки рекламы
@@ -92,27 +96,17 @@ public class AdManager : MonoBehaviour
         ReportAdActivity(AdActivity.Opened);
     }
 
-    private void OnAdDisplayFailed(LevelPlayAdInfo adInfo,LevelPlayAdError error)
+    private void OnAdDisplayFailed(LevelPlayAdInfo adInfo, LevelPlayAdError error)
     {
         Debug.LogError($"Ошибка показа рекламы: {error.ErrorCode}");
     }
 
-    private void OnAdRewarded(LevelPlayAdInfo adInfo, LevelPlayReward reward)
-    {
-        Debug.Log($"Реклама просмотрена до конца. Награда: {reward.Amount} {reward.Name}");
-        
-        // Сообщить PlayFab о завершении
-        ReportAdActivity(AdActivity.End);
-        
-        // Выдать награду
-        RewardPlayer();
-    }
 
     private void OnAdClosed(LevelPlayAdInfo adInfo)
     {
         Debug.Log("Реклама закрыта");
         ReportAdActivity(AdActivity.Closed);
-        
+
         // Перезагружаем рекламу для следующего показа
         LoadRewardedAd();
     }
@@ -123,8 +117,8 @@ public class AdManager : MonoBehaviour
     {
         var request = new ReportAdActivityRequest
         {
-            PlacementId = _placementId,
-            RewardId = _rewardId,
+            PlacementId = StringPlacementId,
+            RewardId = StringRewardId,
             Activity = activity
         };
         PlayFabClientAPI.ReportAdActivity(request, OnReportSuccess, OnReportError);
@@ -144,12 +138,13 @@ public class AdManager : MonoBehaviour
     {
         var request = new RewardAdActivityRequest
         {
-            PlacementId = _placementId,
-            RewardId = _rewardId
+            PlacementId = StringPlacementId,
+            RewardId = StringRewardId
         };
 
         PlayFabClientAPI.RewardAdActivity(request,
-            result => {
+            result =>
+            {
                 Debug.Log("Игрок получил награду!");
                 // Обнови UI с валютой
                 Currency.PlayFabCurrency.GetCurrencyBalance(); // Обновляем баланс
@@ -162,7 +157,7 @@ public class AdManager : MonoBehaviour
     void OnDestroy()
     {
         LevelPlay.OnInitSuccess -= OnLevelPlayInitialized;
-        
+
         if (_rewardedAd != null)
         {
             _rewardedAd.OnAdLoaded -= OnAdLoaded;
@@ -171,7 +166,7 @@ public class AdManager : MonoBehaviour
             _rewardedAd.OnAdDisplayFailed -= OnAdDisplayFailed;
             _rewardedAd.OnAdRewarded -= OnAdRewarded;
             _rewardedAd.OnAdClosed -= OnAdClosed;
-            
+
             _rewardedAd.Dispose();
         }
     }
