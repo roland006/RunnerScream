@@ -12,24 +12,12 @@ public class AdManager : MonoBehaviour
 
     private LevelPlayRewardedAd _rewardedAd;
 
+ 
+
     void Start()
     {
-        // Подписываемся на успешную инициализацию LevelPlay
-        LevelPlay.OnInitSuccess += OnLevelPlayInitialized;
-    }
-
-    private void OnLevelPlayInitialized(LevelPlayConfiguration config)
-    {
-        Debug.Log("LevelPlay инициализирован!");
-
-        // Создаем экземпляр rewarded ad после инициализации
         _rewardedAd = new LevelPlayRewardedAd(StringAdUnitId);
-
-        // Подписываемся на события LevelPlayRewardedAd
         RegisterRewardedAdEvents();
-
-        // Загружаем рекламу
-        LoadRewardedAd();
     }
 
     private void RegisterRewardedAdEvents()
@@ -45,8 +33,21 @@ public class AdManager : MonoBehaviour
     // Метод для показа рекламы по нажатию кнопки
     public void ShowRewardedAd()
     {
-        Debug.Log("1. Кнопка нажата, вызов метода ShowRewardedAd.");
+        if (_rewardedAd != null)
+        {
+            _rewardedAd.LoadAd();
+        }
+    }
+    
+    private void OnAdRewarded(LevelPlayAdInfo adInfo, LevelPlayReward reward)
+    {
+        Debug.Log("реклама досмотрена, можно выдавать награду.");
+        ReportAdActivity(AdActivity.End);
+        RewardPlayer();
+    }
 
+    private void OnAdLoaded(LevelPlayAdInfo adInfo)
+    {
         if (_rewardedAd != null && _rewardedAd.IsAdReady())
         {
             Debug.Log("2. Реклама готова, начинаем показ.");
@@ -56,38 +57,14 @@ public class AdManager : MonoBehaviour
         else
         {
             Debug.Log("2. ОШИБКА: Реклама не готова (IsAdReady вернул false).");
-            // Здесь можно добавить логику повторной загрузки рекламы
-            LoadRewardedAd();
         }
-    }
-
-// В обработчике успешного просмотра (OnAdRewarded)
-    private void OnAdRewarded(LevelPlayAdInfo adInfo, LevelPlayReward reward)
-    {
-        Debug.Log("4. Событие OnAdRewarded: реклама досмотрена, можно выдавать награду.");
-        ReportAdActivity(AdActivity.End);
-        RewardPlayer();
-    }
-
-    // Метод для загрузки рекламы
-    public void LoadRewardedAd()
-    {
-        if (_rewardedAd != null)
-        {
-            _rewardedAd.LoadAd();
-        }
-    }
-
-    // ===== ОБРАБОТЧИКИ СОБЫТИЙ LEVELPLAYREWARDEDAD =====
-
-    private void OnAdLoaded(LevelPlayAdInfo adInfo)
-    {
-        Debug.Log("Реклама загружена и готова к показу");
     }
 
     private void OnAdLoadFailed(LevelPlayAdError error)
     {
-        Debug.LogError($"Ошибка загрузки рекламы: {error.ErrorCode}");
+        Debug.LogError($"❌ Ошибка загрузки рекламы: {error.AdUnitId}");
+        Debug.LogError($"Код ошибки: {error.ErrorCode}");
+        Debug.LogError($"Детали: {error.ErrorMessage}");
     }
 
     private void OnAdDisplayed(LevelPlayAdInfo adInfo)
@@ -106,13 +83,8 @@ public class AdManager : MonoBehaviour
     {
         Debug.Log("Реклама закрыта");
         ReportAdActivity(AdActivity.Closed);
-
-        // Перезагружаем рекламу для следующего показа
-        LoadRewardedAd();
     }
-
-    // ===== МЕТОДЫ PLAYFAB (остаются без изменений) =====
-
+    
     private void ReportAdActivity(AdActivity activity)
     {
         var request = new ReportAdActivityRequest
@@ -126,12 +98,12 @@ public class AdManager : MonoBehaviour
 
     private void OnReportSuccess(ReportAdActivityResult result)
     {
-        Debug.Log("Активность успешно отчетена");
+        Debug.Log("Удачно запущено");
     }
 
     private void OnReportError(PlayFabError error)
     {
-        Debug.LogError($"Ошибка отчета: {error.GenerateErrorReport()}");
+        Debug.LogError($"Ошибка: {error.GenerateErrorReport()}");
     }
 
     public void RewardPlayer()
@@ -146,8 +118,8 @@ public class AdManager : MonoBehaviour
             result =>
             {
                 Debug.Log("Игрок получил награду!");
-                // Обнови UI с валютой
-                Currency.PlayFabCurrency.GetCurrencyBalance(); // Обновляем баланс
+                
+                Currency.PlayFabCurrency.GetCurrencyBalance();
             },
             error => Debug.LogError(error.GenerateErrorReport())
         );
@@ -156,8 +128,6 @@ public class AdManager : MonoBehaviour
     // Отписываемся от событий при уничтожении объекта
     void OnDestroy()
     {
-        LevelPlay.OnInitSuccess -= OnLevelPlayInitialized;
-
         if (_rewardedAd != null)
         {
             _rewardedAd.OnAdLoaded -= OnAdLoaded;
@@ -170,4 +140,5 @@ public class AdManager : MonoBehaviour
             _rewardedAd.Dispose();
         }
     }
+   
 }

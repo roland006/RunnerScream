@@ -16,7 +16,8 @@ namespace DataBase
         private string StringPlacementId = "F008E07BEB7457EF"; // это Placement ID из строки браузера в Playfab. Про начисление награды
         private string StringAppId = "24583f3d5"; // это AppKey из LevelPlay, про подключение рекламы
         private string StringTitleId = "10C871"; // это TitleId из плейфаба. Обозначающий айдишник игры
-
+        private string StringAdUnitId = "1mnkp5jrqnmrrjfd"; // ID Ad Unit из levelPlay -> Settings
+        private LevelPlayRewardedAd _rewardedAd;
         void Start()
         {
             _customId = SystemInfo.deviceUniqueIdentifier;
@@ -26,6 +27,23 @@ namespace DataBase
             }
         
             LoginWithCustomID();
+            LevelPlay.OnInitSuccess += OnLevelPlayInitialized;
+            LevelPlay.OnInitFailed += OnLevelPlayInitializedFailed;
+        }
+        private void OnLevelPlayInitialized(LevelPlayConfiguration config)
+        {
+            Debug.Log("LevelPlay инициализирован!");
+
+            // Создаем экземпляр rewarded ad после инициализации
+            _rewardedAd = new LevelPlayRewardedAd(StringAdUnitId);
+
+          
+        }
+    
+        private void OnLevelPlayInitializedFailed(LevelPlayInitError error)
+        {
+            Debug.Log("LevelPlay обосрался"+ error.ErrorMessage);
+
         }
 
         void LoginWithCustomID()
@@ -93,6 +111,7 @@ namespace DataBase
             LoadMenu();
         }
 
+        
         public void GetSpecificAdPlacement()
         {
             var request = new GetAdPlacementsRequest
