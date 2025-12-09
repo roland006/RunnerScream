@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Currency;
 using Unity.Services.LevelPlay;
 
@@ -18,6 +18,7 @@ public class MenuCurrencyUtils : MonoBehaviour
 
     public void AddHardCurrency(int amountToAdd)
     {
+        Debug.Log("пОКАЖИ РЕКЛАМУ");
         adManager.ShowRewardedAd();
     }
 

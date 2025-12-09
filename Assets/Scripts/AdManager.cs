@@ -33,9 +33,15 @@ public class AdManager : MonoBehaviour
     // Метод для показа рекламы по нажатию кнопки
     public void ShowRewardedAd()
     {
+        Debug.Log(_rewardedAd);
+
         if (_rewardedAd != null)
         {
             _rewardedAd.LoadAd();
+        }
+        else
+        {
+            Debug.Log("чТО-ТО ПОШЛО НЕ ТАК");
         }
     }
     
@@ -48,6 +54,7 @@ public class AdManager : MonoBehaviour
 
     private void OnAdLoaded(LevelPlayAdInfo adInfo)
     {
+        Debug.LogError("Покажи рекламу 2");
         if (_rewardedAd != null && _rewardedAd.IsAdReady())
         {
             Debug.Log("2. Реклама готова, начинаем показ.");

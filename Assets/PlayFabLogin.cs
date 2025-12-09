@@ -35,9 +35,7 @@ namespace DataBase
             Debug.Log("LevelPlay инициализирован!");
 
             // Создаем экземпляр rewarded ad после инициализации
-            _rewardedAd = new LevelPlayRewardedAd(StringAdUnitId);
-
-          
+            _rewardedAd = new LevelPlayRewardedAd(StringAdUnitId);          
         }
     
         private void OnLevelPlayInitializedFailed(LevelPlayInitError error)
@@ -95,20 +93,23 @@ namespace DataBase
 
         void InitAds()
         {
+            
             if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
             {
                 PlayFabSettings.staticSettings.TitleId = StringTitleId;
+             
             }
 
             LevelPlay.OnInitSuccess += SdkInitializationCompletedEvent;
             LevelPlay.OnInitFailed += SdkInitializationFailedEvent;
             
             LevelPlay.Init(StringAppId);
-
+            //Debug.LogError("TryInit" + StringAppId);
             // Вызов метода для получения конкретного размещения
             GetSpecificAdPlacement();
-    
-            LoadMenu();
+            LevelPlay.ValidateIntegration();
+            LevelPlay.LaunchTestSuite();
+             LoadMenu();
         }
 
         
